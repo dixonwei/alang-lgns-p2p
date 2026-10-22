@@ -30,3 +30,12 @@ git push -u origin main
 ```
 
 不要把 `data/admin-password.txt` 上传到公开仓库。
+## 启用 GitHub Pages
+
+1. 打开 https://github.com/dixonwei/alang-lgns-p2p/settings/pages
+2. Source 选择 `Deploy from a branch`。
+3. Branch 选择 `main`，目录选择 `/ (root)`。
+4. 点击 Save。
+5. 等待约 1 分钟，访问 https://dixonwei.github.io/alang-lgns-p2p/ 。
+
+公开展示版会把订单保存在当前浏览器，不会同步给其他学员。正式的跨用户撮合需要部署 Node.js 后端服务。

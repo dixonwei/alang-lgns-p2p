@@ -15,6 +15,7 @@ const state = {
 
 const $ = id => document.getElementById(id);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
+const STATIC_DEMO = Boolean(window.ALANG_STATIC_DEMO);
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -49,6 +50,7 @@ function showToast(message, type = 'ok') {
 }
 
 async function api(path, options = {}) {
+  if (STATIC_DEMO) return window.ALANG_STATIC_API(path, options);
   const res = await fetch(path, Object.assign({
     headers: { 'Content-Type': 'application/json' }
   }, options));
@@ -446,8 +448,19 @@ function bindEvents() {
   });
 }
 
+function addStaticDemoBanner() {
+  if (!STATIC_DEMO) return;
+  document.querySelectorAll('a[href="./admin.html"]').forEach(link => { link.style.display = 'none'; });
+  if (document.querySelector('.public-demo-banner')) return;
+  const banner = document.createElement('div');
+  banner.className = 'public-demo-banner';
+  banner.innerHTML = '<span>公开展示版</span><p>本页已部署为可直接分享的展示网站；订单只保存在当前浏览器，正式跨用户撮合仍需连接后台服务。</p>';
+  const main = document.querySelector('main');
+  main.insertBefore(banner, main.firstChild);
+}
 async function init() {
   bindEvents();
+  addStaticDemoBanner();
   try {
     await loadConfig();
     await loadOrders();

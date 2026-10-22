@@ -63,3 +63,13 @@
 ## 链上担保合约
 
 `contracts/LGNSHTLC.sol` 已加入双链 HTLC 基础源码和部署检查说明。该合约当前未部署、未审计，不能用于真实资金。
+
+## 公开展示网址
+
+GitHub 仓库：https://github.com/dixonwei/alang-lgns-p2p
+
+启用 GitHub Pages 后，可发给学员的公开展示网址：
+
+https://dixonwei.github.io/alang-lgns-p2p/
+
+公开展示版使用浏览器本地订单记录，适合展示页面与操作流程；正式跨用户撮合仍需部署 Node.js 后端。
