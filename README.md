@@ -1,6 +1,6 @@
 # 阿郎老师 LGNS 双链互助交换站
 
-面向学员的 ANUBIS ↔ Polygon LGNS P2P 互助交换前端与本地撮合服务。
+面向所有 LGNS 持有者的 ANUBIS ↔ Polygon LGNS P2P 互助交换前端与本地撮合服务。
 
 ## 启动方式
 
@@ -68,7 +68,7 @@
 
 GitHub 仓库：https://github.com/dixonwei/alang-lgns-p2p
 
-启用 GitHub Pages 后，可发给学员的公开展示网址：
+启用 GitHub Pages 后，可对外分享的公开展示网址：
 
 https://dixonwei.github.io/alang-lgns-p2p/
 

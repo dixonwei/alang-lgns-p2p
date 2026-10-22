@@ -38,4 +38,4 @@ git push -u origin main
 4. 点击 Save。
 5. 等待约 1 分钟，访问 https://dixonwei.github.io/alang-lgns-p2p/ 。
 
-公开展示版会把订单保存在当前浏览器，不会同步给其他学员。正式的跨用户撮合需要部署 Node.js 后端服务。
+公开展示版会把订单保存在当前浏览器，不会同步给其他用户。正式的跨用户撮合需要部署 Node.js 后端服务。
