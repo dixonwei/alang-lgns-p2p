@@ -1,0 +1,17 @@
+{
+  "polygon": {
+    "chainId": 137,
+    "lgns": "0xeB51D9A39AD5EEF215dC0Bf39a8821ff804A0F01",
+    "htlc": ""
+  },
+  "anubis": {
+    "chainId": 6714,
+    "rpc": "https://rpc.anubispace.org",
+    "lgns": "0x4D1D808a081FdAc440703b3765FC61f8028C06B8",
+    "htlc": ""
+  },
+  "feeBps": 300,
+  "feeRecipient": "",
+  "audited": false,
+  "deployed": false
+}

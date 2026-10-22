@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173329">
+  <title>管理员控制台 · 阿郎老师 LGNS 双链互助交换站</title>
+  <link rel="icon" href="/assets/logo.png">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin.css">
+</head>
+<body class="admin-body">
+  <header class="site-header admin-header">
+    <a class="brand" href="/">
+      <span class="brand-logo-wrap"><img src="/assets/logo.png" alt="" class="brand-logo"></span>
+      <span class="brand-copy"><strong>阿郎老师</strong><small>管理员控制台</small></span>
+    </a>
+    <a class="admin-back-link" href="/">返回公开网站</a>
+    <button class="wallet-button admin-logout hidden" id="logoutButton" type="button"><span class="wallet-dot"></span>退出后台</button>
+  </header>
+
+  <main class="admin-shell">
+    <section class="admin-login card" id="loginPanel">
+      <div class="admin-login-copy">
+        <span class="section-kicker">仅限管理员</span>
+        <h1>平台不定价，只维护撮合规则</h1>
+        <p>兑换比例由每一笔订单的卖出方自行填写。平台固定收取 3% 服务费，后台不能改价、不能改费率。</p>
+        <div class="admin-security-note"><span>!</span><p>管理员密码保存在 <code>data/admin-password.txt</code>，不要发给学员。</p></div>
+      </div>
+      <form id="loginForm" class="admin-login-form">
+        <label for="passwordInput">管理员密码</label>
+        <input id="passwordInput" type="password" autocomplete="current-password" placeholder="输入管理员密码" required>
+        <button class="button button-primary button-full" type="submit">进入管理员控制台</button>
+        <p class="form-hint">仅本地/受信任设备使用</p>
+      </form>
+    </section>
+
+    <section class="admin-dashboard hidden" id="dashboardPanel">
+      <div class="admin-title-row">
+        <div><span class="section-kicker">控制台</span><h1>订单与撮合管理</h1><p>审核、查看和下架未成交订单；平台不参与定价。</p></div>
+        <span class="status-chip status-safe">服务费固定 3%</span>
+      </div>
+
+      <div class="admin-stats">
+        <article><span>定价方式</span><strong>卖方自主设置</strong></article>
+        <article><span>固定服务费</span><strong>3%</strong></article>
+        <article><span>待接单</span><strong id="statPending">0</strong></article>
+        <article><span>全部订单</span><strong id="statOrders">0</strong></article>
+      </div>
+
+      <div class="admin-grid">
+        <section class="card ratio-editor">
+          <span class="section-kicker">平台规则</span>
+          <h2>比例完全由卖出方填写</h2>
+          <p class="admin-muted">平台不设固定汇率，也不会替买卖双方调整价格。每条订单发布后，比例、数量和到期时间都会记录。</p>
+          <div class="rule-list">
+            <div><b>1</b><span>卖出方填写本单兑换比例</span></div>
+            <div><b>2</b><span>平台只展示、签名确认和撮合</span></div>
+            <div><b>3</b><span>3% 服务费固定，管理员不可修改</span></div>
+            <div><b>4</b><span>订单最长 24 小时，到期自动失效</span></div>
+          </div>
+        </section>
+
+        <section class="card admin-history-card">
+          <div class="admin-card-head"><div><span class="section-kicker">资金安全</span><h2>当前阶段说明</h2></div></div>
+          <div class="stage-banner"><strong>仅撮合版</strong><span>不会要求用户向平台地址转账</span></div>
+          <div class="rule-list safety-list">
+            <div><b>✓</b><span>钱包签名由服务器真实校验</span></div>
+            <div><b>✓</b><span>网站不保存私钥、助记词或钱包密码</span></div>
+            <div><b>✓</b><span>管理员只能取消未接单订单</span></div>
+            <div><b>!</b><span>HTLC 双链担保合约部署并审计后，才进入真实锁仓阶段</span></div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card admin-orders-card">
+        <div class="admin-card-head"><div><span class="section-kicker">订单管理</span><h2>当前订单</h2></div><button class="refresh-button" id="refreshAdmin" type="button">刷新</button></div>
+        <div id="adminOrderList" class="admin-order-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/admin.js"></script>
+</body>
+</html>
