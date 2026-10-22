@@ -23,7 +23,7 @@ window.ALANG_STATIC_API = async function staticApi(path, options = {}) {
       feeBps: 300,
       feePercent: 3,
       minOrder: 10,
-      maxOrder: 500,
+      maxOrder: 10000,
       maxExpiryMinutes: 1440,
       minSellerRatio: 0.000001,
       maxSellerRatio: 10000,
@@ -45,7 +45,7 @@ window.ALANG_STATIC_API = async function staticApi(path, options = {}) {
     const sourceAmount = Number(body.sourceAmount);
     const ratio = Number(body.sellerRatio);
     if (!body.wallet || !body.signature) throw new Error('请先连接钱包并完成签名');
-    if (!Number.isFinite(sourceAmount) || sourceAmount < 10 || sourceAmount > 500) throw new Error('卖出数量需在 10–500 LGNS 之间');
+    if (!Number.isFinite(sourceAmount) || sourceAmount < 10 || sourceAmount > 10000) throw new Error('卖出数量需在 10–10000 LGNS 之间');
     if (!Number.isFinite(ratio) || ratio <= 0) throw new Error('请填写有效的卖出比例');
     const targetAmount = round6(sourceAmount * ratio);
     const feeAmount = round6(targetAmount * 0.03);
