@@ -76,7 +76,6 @@ async function loadConfig() {
   state.config = data;
   $('heroRate').textContent = '卖方定价';
   $('heroFee').textContent = `${(Number(data.feeBps) / 100).toFixed(0)}%`;
-  $('ratioVersion').textContent = 'P2P 自由报价';
   $('amountRange').textContent = `单笔 ${data.minOrder}–${data.maxOrder} LGNS`;
   $('amountInput').min = data.minOrder;
   $('amountInput').max = data.maxOrder;
@@ -116,13 +115,6 @@ function updateQuote() {
   $('targetSymbol').textContent = `${tgt} LGNS`;
   $('ratioSourceText').textContent = `1 ${src}`;
   $('ratioSuffix').textContent = tgt;
-  $('ratioSourceLabel').textContent = src;
-  $('ratioTargetLabel').textContent = tgt;
-  $('ratioBig').textContent = '1';
-  $('ratioTarget').textContent = ratio > 0 ? ratio.toFixed(6) : '自填';
-  $('reverseRate').textContent = ratio > 0
-    ? `1 ${tgt} = ${(1 / ratio).toFixed(6)} ${src}`
-    : '由卖出方在下单时填写';
   $('receiveAmount').textContent = formatNumber(q.sellerReceives, 6);
   $('grossAmount').textContent = `${formatNumber(q.targetAmount, 6)} ${tgt}`;
   $('feeAmount').textContent = `${formatNumber(q.feeAmount, 6)} ${tgt}`;
