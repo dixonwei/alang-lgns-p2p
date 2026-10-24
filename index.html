@@ -7,7 +7,7 @@
   <title>阿郎老师 · LGNS 双链互助交换站</title>
   <meta name="description" content="阿郎老师的 LGNS 双链 P2P 互助交换站，支持 ANUBIS 与 Polygon 之间公开订单撮合、钱包签名与透明费率展示。">
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261024-2">
 </head>
 <body>
   <div class="page-glow page-glow-a"></div>
@@ -105,13 +105,13 @@
 
           <div class="field-block ratio-field-block">
             <div class="field-label-row">
-              <label for="sellerRatioInput">由我设置兑换比例</label>
+              <label for="sellerRatioInput">设置兑换比例</label>
               <span>平台不设定比例</span>
             </div>
             <div class="ratio-input-wrap">
               <span id="ratioSourceText">1 ANUBIS</span>
               <b>=</b>
-              <input id="sellerRatioInput" type="number" min="0.000001" max="10000" step="0.000001" inputmode="decimal" value="0.6" aria-label="卖出方设置的兑换比例">
+              <input id="sellerRatioInput" type="number" min="0.000001" max="10000" step="0.000001" inputmode="decimal" placeholder="请输入比例" aria-label="卖出方设置的兑换比例">
               <span id="ratioSuffix">POLYGON</span>
             </div>
           </div>
@@ -268,7 +268,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./static-api.js"></script>
-  <script src="./app.js"></script>
+  <script src="./static-api.js?v=20261024-2"></script>
+  <script src="./app.js?v=20261024-2"></script>
 </body>
 </html>

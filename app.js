@@ -15,7 +15,7 @@ const state = {
 
 const $ = id => document.getElementById(id);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
-const STATIC_DEMO = Boolean(window.ALANG_STATIC_DEMO);
+const STATIC_DEMO = window.ALANG_STATIC_DEMO !== undefined ? Boolean(window.ALANG_STATIC_DEMO) : (location.protocol === 'file:' || !['127.0.0.1', 'localhost'].includes(location.hostname));
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -61,7 +61,18 @@ async function api(path, options = {}) {
 }
 
 async function loadConfig() {
-  const data = await api('/api/config');
+  let data;
+  try {
+    data = await api('/api/config');
+  } catch (err) {
+    if (!STATIC_DEMO) throw err;
+    data = {
+      pricingMode: 'seller', feeBps: 300, feePercent: 3,
+      minOrder: 10, maxOrder: 10000, maxExpiryMinutes: 1440,
+      minSellerRatio: 0.000001, maxSellerRatio: 10000,
+      settlementMode: 'static-demo'
+    };
+  }
   state.config = data;
   $('heroRate').textContent = '卖方定价';
   $('heroFee').textContent = `${(Number(data.feeBps) / 100).toFixed(0)}%`;
@@ -231,8 +242,13 @@ function timeRemaining(expiresAt) {
 }
 
 async function loadOrders() {
-  const data = await api('/api/orders');
-  state.orders = data.orders || [];
+  try {
+    const data = await api('/api/orders');
+    state.orders = data.orders || [];
+  } catch (err) {
+    if (!STATIC_DEMO) throw err;
+    state.orders = [];
+  }
   renderOrders();
 }
 
