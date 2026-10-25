@@ -7,7 +7,7 @@
   <title>阿郎老师 · LGNS 双链互助交换站</title>
   <meta name="description" content="阿郎老师的 LGNS 双链 P2P 互助交换站，支持 ANUBIS 与 Polygon 之间公开订单撮合、钱包签名与透明费率展示。">
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./styles.css?v=20261024-3">
+  <link rel="stylesheet" href="./styles.css?v=20261025-3">
 </head>
 <body>
   <div class="page-glow page-glow-a"></div>
@@ -24,6 +24,8 @@
     <nav class="main-nav" aria-label="主导航">
       <a href="#exchange">开始交换</a>
       <a href="#orders">公开订单</a>
+      <a href="#escrow">担保规则</a>
+      <a href="#consult">问题咨询</a>
       <a href="#guide">操作说明</a>
       <a href="#transparency">公开透明</a>
     </nav>
@@ -50,11 +52,31 @@
         </div>
         <div class="hero-facts" aria-label="平台核心规则">
           <div class="fact"><strong id="heroRate">卖方定价</strong><span>平台只负责撮合</span></div>
-          <div class="fact"><strong id="heroFee">3%</strong><span>平台服务费固定</span></div>
+          <div class="fact"><strong id="heroFee">3%</strong><span id="heroFeeLabel">订单创建时锁定</span></div>
           <div class="fact"><strong>24h</strong><span>订单最长有效期</span></div>
         </div>
       </div>
 
+      <aside class="hero-rule-card reveal delay-1">
+        <div class="hero-rule-head">
+          <span class="hero-rule-pill"><i></i> 担保交换规则</span>
+          <span class="hero-rule-badge">4 步完成</span>
+        </div>
+        <h2>平台不碰本金</h2>
+        <p>卖家与买家分别在两条链把 LGNS 锁入 HTLC 合约，使用同一个密钥完成交换。</p>
+        <div class="hero-rule-steps">
+          <div><b>01</b><span><strong>卖家锁仓</strong><small>源链合约锁定</small></span></div>
+          <div><b>02</b><span><strong>买家锁仓</strong><small>目标链合约锁定</small></span></div>
+          <div><b>03</b><span><strong>同一密钥领取</strong><small>资产由合约释放</small></span></div>
+          <div><b>04</b><span><strong>超时可退款</strong><small>原钱包取回资产</small></span></div>
+        </div>
+        <div class="hero-rule-fee">
+          <span>当前平台服务费</span>
+          <strong id="heroFeeRule">3%</strong>
+          <small>在卖家领取目标链资产时扣除</small>
+        </div>
+        <a class="hero-rule-link" href="#escrow">查看完整担保规则 <span>→</span></a>
+      </aside>
     </section>
 
     <section class="section-shell exchange-section" id="exchange">
@@ -63,7 +85,7 @@
           <span class="section-kicker">01 · 开始交换</span>
           <h2>先把每一笔费用算清楚</h2>
         </div>
-        <p>卖出数量与兑换比例都由你填写，系统即时计算到账、3% 平台服务费和链上成本。</p>
+        <p>卖出数量与兑换比例都由你填写，系统即时计算到账、当前平台服务费和链上成本。</p>
       </div>
 
       <div class="exchange-layout">
@@ -127,7 +149,7 @@
 
           <div class="quote-details">
             <div><span>成交毛额</span><strong id="grossAmount">60.000000 POLYGON</strong></div>
-            <div><span>平台服务费 · 3%</span><strong id="feeAmount">1.800000 POLYGON</strong></div>
+            <div><span id="quoteFeeLabel">平台服务费 · 3%</span><strong id="feeAmount">1.800000 POLYGON</strong></div>
             <div><span>链上 Gas / 代币税</span><strong>由各自钱包承担</strong></div>
             <div><span>卖出方订单比例</span><strong id="quoteRate">1 ANUBIS = 0.600000 POLYGON</strong></div>
           </div>
@@ -150,11 +172,11 @@
 
         <aside class="cost-panel reveal delay-1">
           <span class="section-kicker">费用边界</span>
-          <h3>平台只收 3% 服务费</h3>
+          <h3 id="feePanelTitle">平台服务费 3%</h3>
           <div class="cost-list">
             <div class="cost-item">
               <span class="cost-icon">03</span>
-              <div><strong>平台服务费</strong><p>按成交毛额计算，卖方承担；成功结算才收取。</p></div>
+              <div><strong id="feePanelLabel">平台服务费 3%</strong><p id="feePanelDesc">按成交毛额计算，卖方承担；费率在订单创建时锁定。</p></div>
             </div>
             <div class="cost-item">
               <span class="cost-icon">GAS</span>
@@ -183,7 +205,7 @@
           <span class="section-kicker">02 · 公开订单簿</span>
           <h2>订单规则</h2>
         </div>
-        <p>每笔订单比例由卖出方自行填写并锁定，平台只收固定 3% 服务费，超时自动失效。</p>
+        <p>每笔订单比例由卖出方自行填写并锁定，平台服务费按订单创建时费率计算，超时自动失效。</p>
       </div>
 
       <div class="order-toolbar reveal">
@@ -203,10 +225,128 @@
       <div class="order-list" id="orderList" aria-live="polite"></div>
     </section>
 
+    <section class="section-shell escrow-section" id="escrow">
+      <div class="section-heading reveal">
+        <div>
+          <span class="section-kicker">03 · 担保交换规则</span>
+          <h2>平台不托管资金，双方锁入合约</h2>
+        </div>
+        <p>卖家与买家分别在两条链锁定资产，使用同一个密钥完成交换；未完成时，原锁仓钱包可以按超时规则退款。</p>
+      </div>
+
+      <div class="escrow-preview-note reveal">
+        <span class="escrow-preview-pill">规则预览</span>
+        <p><strong>HTLC 合约尚未部署和审计。</strong> 当前页面只展示担保流程，不会要求用户向任何个人钱包转账。</p>
+      </div>
+
+      <div class="escrow-flow">
+        <article class="escrow-step reveal">
+          <span class="escrow-step-no">01</span>
+          <span class="escrow-step-tag">源链</span>
+          <h3>卖家锁定 LGNS</h3>
+          <p>卖家在源链的 HTLC 合约锁定 LGNS，例如在 Polygon 链锁仓。</p>
+          <small>合约记录数量、比例、收款人和超时时间</small>
+        </article>
+        <article class="escrow-step reveal delay-1">
+          <span class="escrow-step-no">02</span>
+          <span class="escrow-step-tag">目标链</span>
+          <h3>买家锁定 LGNS</h3>
+          <p>买家确认后在目标链 HTLC 合约锁定对应 LGNS，例如在 ANUBIS 链锁仓。</p>
+          <small>双方使用同一个哈希锁，但分别锁在两条链</small>
+        </article>
+        <article class="escrow-step reveal delay-2">
+          <span class="escrow-step-no">03</span>
+          <span class="escrow-step-tag">结算</span>
+          <h3>密钥领取</h3>
+          <p>卖家先用密钥领取目标链 LGNS；密钥公开后，买家再用同一密钥领取源链 LGNS。</p>
+          <small>资产由合约自动释放，不经过平台钱包</small>
+        </article>
+        <article class="escrow-step reveal delay-3">
+          <span class="escrow-step-no">04</span>
+          <span class="escrow-step-tag">兜底</span>
+          <h3>超时退款</h3>
+          <p>未完成交换时，原锁仓钱包在超时后从各自链上的合约取回资产。</p>
+          <small>平台管理员不能阻止退款或转走锁仓资金</small>
+        </article>
+      </div>
+
+      <div class="escrow-visual reveal">
+        <article class="escrow-chain-card escrow-source">
+          <span class="escrow-chain-label">源链 · 例如 POLYGON</span>
+          <h3>卖家锁仓</h3>
+          <div class="escrow-chain-row"><span>锁仓人</span><strong>卖家钱包</strong></div>
+          <div class="escrow-chain-row"><span>领取人</span><strong>买家钱包</strong></div>
+          <div class="escrow-chain-foot">买家使用公开密钥领取</div>
+        </article>
+        <div class="escrow-bridge">
+          <span class="escrow-bridge-icon">⇄</span>
+          <strong>同一密钥</strong>
+          <small>同一条款<br>两链锁定</small>
+        </div>
+        <article class="escrow-chain-card escrow-target">
+          <span class="escrow-chain-label">目标链 · 例如 ANUBIS</span>
+          <h3>买家锁仓</h3>
+          <div class="escrow-chain-row"><span>锁仓人</span><strong>买家钱包</strong></div>
+          <div class="escrow-chain-row"><span>领取人</span><strong>卖家钱包</strong></div>
+          <div class="escrow-chain-foot">卖家使用密钥领取，并扣除 3% 服务费</div>
+        </article>
+      </div>
+
+      <div class="escrow-info-grid reveal">
+        <article class="escrow-info-card">
+          <span class="section-kicker">服务费</span>
+          <div class="escrow-fee-line"><strong id="escrowFeeValue">3%</strong><span>当前平台服务费</span></div>
+          <ul class="escrow-list">
+            <li>在卖家领取目标链资产时自动扣除</li>
+            <li>链上 Gas 由发起交易的钱包自行承担</li>
+            <li>LGNS 代币转账税按合约实际扣除为准</li>
+          </ul>
+        </article>
+        <article class="escrow-info-card">
+          <span class="section-kicker">退款与时间</span>
+          <ul class="escrow-list escrow-list-strong">
+            <li>源链建议锁仓 60 分钟</li>
+            <li>目标链建议锁仓 30 分钟</li>
+            <li>买家未锁仓：卖家可超时退款</li>
+            <li>双方未完成领取：各自超时退款</li>
+            <li>源链超时时间必须长于目标链</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="escrow-security reveal">
+        <span class="escrow-security-mark">!</span>
+        <div>
+          <strong>安全边界</strong>
+          <p>不要向个人钱包、客服地址或任何所谓“平台收款地址”转账。只有网站公开的 HTLC 合约地址，才属于正式担保流程。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell consult-section" id="consult">
+      <div class="consult-card reveal">
+        <div class="consult-copy">
+          <span class="section-kicker">04 · 问题咨询</span>
+          <h2>使用中遇到问题，扫码联系我</h2>
+          <p>订单操作、担保规则、链上交易或页面使用过程中有疑问，可以打开 DeBox 扫码咨询阿郎老师。</p>
+          <div class="consult-points">
+            <span>订单操作</span>
+            <span>担保规则</span>
+            <span>链上交易</span>
+          </div>
+          <div class="consult-account"><span>DeBox</span><strong>志愿者-阿郎</strong></div>
+        </div>
+        <div class="consult-qr-wrap">
+          <img src="./assets/debox-card.png" alt="志愿者-阿郎 DeBox 咨询二维码" loading="lazy">
+          <p>打开 DeBox 扫码咨询</p>
+        </div>
+      </div>
+    </section>
+
     <section class="section-shell guide-section" id="guide">
       <div class="section-heading reveal">
         <div>
-          <span class="section-kicker">03 · 操作说明</span>
+          <span class="section-kicker">05 · 操作说明</span>
           <h2>操作步骤</h2>
         </div>
         <p>从钱包连接到订单成交，每一步都明确显示金额、比例与风险。</p>
@@ -222,7 +362,7 @@
     <section class="section-shell transparency-section" id="transparency">
       <div class="transparency-card reveal">
         <div class="transparency-copy">
-          <span class="section-kicker">04 · 公开透明</span>
+          <span class="section-kicker">06 · 公开透明</span>
           <h2>比例自由，规则固定</h2>
           <p>每笔订单的卖出方、比例、数量、服务费和状态都公开可查。平台不操纵价格，只维护规则与撮合记录。</p>
           <a class="text-link" href="./admin.html">管理员入口 <span>→</span></a>
@@ -268,7 +408,7 @@
   </div>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./static-api.js?v=20261024-3"></script>
-  <script src="./app.js?v=20261024-3"></script>
+  <script src="./static-api.js?v=20261025-3"></script>
+  <script src="./app.js?v=20261025-3"></script>
 </body>
 </html>

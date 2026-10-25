@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#173329">
   <title>管理员控制台 · 阿郎老师 LGNS 双链互助交换站</title>
   <link rel="icon" href="./assets/logo.png">
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./admin.css">
+  <link rel="stylesheet" href="./styles.css?v=20261025-3">
+  <link rel="stylesheet" href="./admin.css?v=20261025-3">
 </head>
 <body class="admin-body">
   <header class="site-header admin-header">
@@ -24,7 +24,7 @@
       <div class="admin-login-copy">
         <span class="section-kicker">仅限管理员</span>
         <h1>平台不定价，只维护撮合规则</h1>
-        <p>兑换比例由每一笔订单的卖出方自行填写。平台固定收取 3% 服务费，后台不能改价、不能改费率。</p>
+        <p>兑换比例由每一笔订单的卖出方自行填写。管理员可以修改平台服务费，但不能修改订单比例。</p>
         <div class="admin-security-note"><span>!</span><p>管理员密码保存在 <code>data/admin-password.txt</code>，不要公开或转发。</p></div>
       </div>
       <form id="loginForm" class="admin-login-form">
@@ -38,25 +38,32 @@
     <section class="admin-dashboard hidden" id="dashboardPanel">
       <div class="admin-title-row">
         <div><span class="section-kicker">控制台</span><h1>订单与撮合管理</h1><p>审核、查看和下架未成交订单；平台不参与定价。</p></div>
-        <span class="status-chip status-safe">服务费固定 3%</span>
+        <span class="status-chip status-safe">服务费可配置</span>
       </div>
 
       <div class="admin-stats">
         <article><span>定价方式</span><strong>卖方自主设置</strong></article>
-        <article><span>固定服务费</span><strong>3%</strong></article>
+        <article><span>当前服务费</span><strong id="statFee">3%</strong></article>
         <article><span>待接单</span><strong id="statPending">0</strong></article>
         <article><span>全部订单</span><strong id="statOrders">0</strong></article>
       </div>
 
       <div class="admin-grid">
         <section class="card ratio-editor">
-          <span class="section-kicker">平台规则</span>
-          <h2>比例完全由卖出方填写</h2>
-          <p class="admin-muted">平台不设固定汇率，也不会替买卖双方调整价格。每条订单发布后，比例、数量和到期时间都会记录。</p>
+          <span class="section-kicker">服务费设置</span>
+          <h2>修改平台服务费</h2>
+          <p class="admin-muted">费率只影响之后创建的新订单。已经发布的订单会保留下单时费率。</p>
+          <form id="feeForm">
+            <label for="feeInput">平台服务费率（%）</label>
+            <div class="admin-ratio-input"><input id="feeInput" type="number" min="0" max="10" step="0.1" value="3" required><span>%</span></div>
+            <div class="admin-preview"><span>当前配置</span><strong id="feePreview">3%</strong></div>
+            <div class="admin-fee-lock"><span>锁</span><p>已发布订单不随新费率变化</p></div>
+            <button class="button button-primary button-full" type="submit">保存服务费率</button>
+          </form>
           <div class="rule-list">
-            <div><b>1</b><span>卖出方填写本单兑换比例</span></div>
-            <div><b>2</b><span>平台只展示、签名确认和撮合</span></div>
-            <div><b>3</b><span>3% 服务费固定，管理员不可修改</span></div>
+            <div><b>1</b><span>兑换比例由卖出方自行填写</span></div>
+            <div><b>2</b><span>平台只负责展示、签名确认和撮合</span></div>
+            <div><b>3</b><span>服务费可调整，新订单按当时费率锁定</span></div>
             <div><b>4</b><span>订单最长 24 小时，到期自动失效</span></div>
           </div>
         </section>
@@ -81,6 +88,6 @@
   </main>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./admin.js"></script>
+  <script src="./admin.js?v=20261025-3"></script>
 </body>
 </html>

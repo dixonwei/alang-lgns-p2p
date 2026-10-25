@@ -13,7 +13,9 @@ const STORE_FILE = path.join(DATA_DIR, 'store.json');
 const PASSWORD_FILE = path.join(DATA_DIR, 'admin-password.txt');
 const PORT = Number(process.env.PORT || 8170);
 const HOST = process.env.HOST || '127.0.0.1';
-const FEE_BPS = 300;
+const DEFAULT_FEE_BPS = 300;
+const MIN_FEE_BPS = 0;
+const MAX_FEE_BPS = 1000;
 const MIN_ORDER = 10;
 const MAX_ORDER = 10000;
 const MAX_EXPIRY_MINUTES = 1440;
@@ -47,7 +49,7 @@ function safeNumber(n, fallback = 0) { const v = Number(n); return Number.isFini
 
 function defaultStore() {
   return {
-    config: { feeBps: FEE_BPS, updatedAt: nowIso(), version: 1 },
+    config: { feeBps: DEFAULT_FEE_BPS, updatedAt: nowIso(), version: 1 },
     orders: []
   };
 }
@@ -65,8 +67,9 @@ function readStore() {
   ensureFiles();
   try {
     const data = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
-    data.config = Object.assign({ feeBps: FEE_BPS, updatedAt: nowIso(), version: 1 }, data.config || {});
-    data.config.feeBps = FEE_BPS;
+    data.config = Object.assign({ feeBps: DEFAULT_FEE_BPS, updatedAt: nowIso(), version: 1 }, data.config || {});
+    const storedFeeBps = Number(data.config.feeBps);
+    data.config.feeBps = Number.isInteger(storedFeeBps) && storedFeeBps >= MIN_FEE_BPS && storedFeeBps <= MAX_FEE_BPS ? storedFeeBps : DEFAULT_FEE_BPS;
     data.orders = Array.isArray(data.orders) ? data.orders : [];
     return data;
   } catch (err) {
@@ -170,7 +173,7 @@ function createOrderMessage(order) {
     `卖出：${order.sourceAmount} LGNS`,
     `锁定比例：${ratioDisplay(order.side, order.ratio)}`,
     `成交毛额：${order.targetAmount}`,
-    `平台服务费：${order.feeAmount}（3%）`,
+    `平台服务费：${order.feeAmount}（${Number(order.feeBps) / 100}%）`,
     `预计到手：${order.sellerReceives}`,
     `有效期：${order.expiryMinutes} 分钟`,
     `钱包：${order.wallet}`
@@ -264,8 +267,10 @@ async function handleApi(req, res, pathname) {
     const store = readStore();
     return sendJson(res, 200, {
       ok: true,
-      feeBps: FEE_BPS,
-      feePercent: FEE_BPS / 100,
+      feeBps: store.config.feeBps,
+      feePercent: store.config.feeBps / 100,
+      minFeePercent: MIN_FEE_BPS / 100,
+      maxFeePercent: MAX_FEE_BPS / 100,
       minOrder: MIN_ORDER,
       maxOrder: MAX_ORDER,
       maxExpiryMinutes: MAX_EXPIRY_MINUTES,
@@ -308,7 +313,8 @@ async function handleApi(req, res, pathname) {
       const store = readStore();
       const roundedSourceAmount = round6(sourceAmount);
       const targetAmount = amountForSellerRatio(roundedSourceAmount, ratio);
-      const feeAmount = round6(targetAmount * FEE_BPS / 10000);
+      const feeBps = store.config.feeBps;
+      const feeAmount = round6(targetAmount * feeBps / 10000);
       const sellerReceives = round6(targetAmount - feeAmount);
       const signedMessage = createOrderMessage({
         side,
@@ -316,6 +322,7 @@ async function handleApi(req, res, pathname) {
         ratio,
         targetAmount,
         feeAmount,
+        feeBps,
         sellerReceives,
         expiryMinutes,
         wallet: body.wallet
@@ -333,7 +340,7 @@ async function handleApi(req, res, pathname) {
         feeAmount,
         sellerReceives,
         ratioLocked: ratio,
-        feeBpsLocked: FEE_BPS,
+        feeBpsLocked: feeBps,
         createdAt: nowIso(),
         updatedAt: nowIso(),
         expiresAt: new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString(),
@@ -403,7 +410,30 @@ async function handleApi(req, res, pathname) {
     if (!isAdmin(req)) return sendJson(res, 401, { ok: false, error: '请先登录管理员' });
     const store = readStore();
     expireOrders(store);
-    return sendJson(res, 200, { ok: true, config: { feeBps: FEE_BPS, pricingMode: 'seller', minOrder: MIN_ORDER, maxOrder: MAX_ORDER, maxExpiryMinutes: MAX_EXPIRY_MINUTES, minSellerRatio: MIN_SELLER_RATIO, maxSellerRatio: MAX_SELLER_RATIO }, orders: store.orders.slice().reverse().map(publicOrder) });
+    return sendJson(res, 200, { ok: true, config: { feeBps: store.config.feeBps, minFeePercent: MIN_FEE_BPS / 100, maxFeePercent: MAX_FEE_BPS / 100, pricingMode: 'seller', minOrder: MIN_ORDER, maxOrder: MAX_ORDER, maxExpiryMinutes: MAX_EXPIRY_MINUTES, minSellerRatio: MIN_SELLER_RATIO, maxSellerRatio: MAX_SELLER_RATIO }, orders: store.orders.slice().reverse().map(publicOrder) });
+  }
+
+  if (req.method === 'POST' && pathname === '/api/admin/fee') {
+    if (!isAdmin(req)) return sendJson(res, 401, { ok: false, error: '请先登录管理员' });
+    try {
+      const body = await bodyJson(req);
+      const feePercent = Number(body.feePercent);
+      if (!Number.isFinite(feePercent) || feePercent < MIN_FEE_BPS / 100 || feePercent > MAX_FEE_BPS / 100) {
+        return sendJson(res, 400, { ok: false, error: '服务费率需在 0%–10% 之间' });
+      }
+      const store = readStore();
+      const oldFeeBps = store.config.feeBps;
+      const newFeeBps = Math.round(feePercent * 100);
+      store.config.feeBps = newFeeBps;
+      store.config.updatedAt = nowIso();
+      store.config.version = Number(store.config.version || 0) + 1;
+      store.feeHistory = Array.isArray(store.feeHistory) ? store.feeHistory : [];
+      store.feeHistory.push({ oldFeeBps, newFeeBps, operator: '阿郎老师', createdAt: nowIso() });
+      writeStore(store);
+      return sendJson(res, 200, { ok: true, feeBps: newFeeBps, feePercent: newFeeBps / 100 });
+    } catch (err) {
+      return sendJson(res, 400, { ok: false, error: err.message });
+    }
   }
 
   if (req.method === 'POST' && pathname === '/api/admin/rate') {

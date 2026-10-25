@@ -36,6 +36,11 @@ function round6(value) {
   return Math.round((Number(value) + Number.EPSILON) * 1e6) / 1e6;
 }
 
+function formatFeePercent(feeBps) {
+  const percent = Number(feeBps) / 100;
+  return `${Number.isInteger(percent) ? percent : percent.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}%`;
+}
+
 function chainName(chainId) {
   const map = { '0x89': 'Polygon', '0x1a3a': 'ANUBIS', '0x1': 'Ethereum' };
   return map[String(chainId || '').toLowerCase()] || '未识别网络';
@@ -75,7 +80,13 @@ async function loadConfig() {
   }
   state.config = data;
   $('heroRate').textContent = '卖方定价';
-  $('heroFee').textContent = `${(Number(data.feeBps) / 100).toFixed(0)}%`;
+  const feeLabel = formatFeePercent(data.feeBps);
+  $('heroFee').textContent = feeLabel;
+  if ($('heroFeeRule')) $('heroFeeRule').textContent = feeLabel;
+  if ($('feePanelTitle')) $('feePanelTitle').textContent = `平台服务费 ${feeLabel}`;
+  if ($('feePanelLabel')) $('feePanelLabel').textContent = `平台服务费 ${feeLabel}`;
+  if ($('quoteFeeLabel')) $('quoteFeeLabel').textContent = `平台服务费 · ${feeLabel}`;
+  if ($('escrowFeeValue')) $('escrowFeeValue').textContent = feeLabel;
   $('amountRange').textContent = `单笔 ${data.minOrder}–${data.maxOrder} LGNS`;
   $('amountInput').min = data.minOrder;
   $('amountInput').max = data.maxOrder;
@@ -273,7 +284,7 @@ function renderOrders() {
         <div>
           <div class="order-direction"><span>${orderSideLabel(order.side)}</span><b>·</b><span>${escapeHtml(order.id)}</span></div>
           <div class="order-amounts"><strong>${formatNumber(order.sourceAmount, 6)}</strong><span>${order.side === 'anubisToPolygon' ? 'ANUBIS' : 'POLYGON'} LGNS</span><b>→</b><strong>${formatNumber(order.targetAmount, 6)}</strong><span>${targetShort} LGNS</span></div>
-          <div class="order-receive">卖方预计到手 <b>${formatNumber(order.sellerReceives, 6)} ${targetShort} LGNS</b> · 平台费 3% 已扣除</div>
+          <div class="order-receive">卖方预计到手 <b>${formatNumber(order.sellerReceives, 6)} ${targetShort} LGNS</b> · 平台费 ${formatFeePercent(order.feeBpsLocked ?? 300)} 已扣除</div>
         </div>
         <div class="order-meta">
           <span class="order-status ${statusClass}">${statusText}</span>
@@ -323,7 +334,7 @@ async function prepareCreateOrder() {
     <div><span>卖出数量</span><strong>${formatNumber(amount, 6)} LGNS</strong></div>
     <div><span>卖出方比例</span><strong>${sideRatioLabel(state.side, sellerRatio)}</strong></div>
     <div><span>成交毛额</span><strong>${formatNumber(q.targetAmount, 6)} ${sideTargetShort(state.side)} LGNS</strong></div>
-    <div><span>平台服务费 3%</span><strong>${formatNumber(q.feeAmount, 6)} ${sideTargetShort(state.side)} LGNS</strong></div>
+    <div><span>平台服务费 ${formatFeePercent(state.config.feeBps)}</span><strong>${formatNumber(q.feeAmount, 6)} ${sideTargetShort(state.side)} LGNS</strong></div>
     <div><span>预计到手</span><strong>${formatNumber(q.sellerReceives, 6)} ${sideTargetShort(state.side)} LGNS</strong></div>
     <div><span>订单有效期</span><strong>${expiryMinutes >= 60 ? (expiryMinutes / 60) + ' 小时' : expiryMinutes + ' 分钟'}</strong></div>`;
   openModal('orderModal');
@@ -342,7 +353,7 @@ async function confirmCreateOrder() {
       `卖出：${order.amount} LGNS`,
       `锁定比例：${sideRatioLabel(order.side, order.ratio)}`,
       `成交毛额：${order.targetAmount}`,
-      `平台服务费：${order.feeAmount}（3%）`,
+      `平台服务费：${order.feeAmount}（${formatFeePercent(state.config.feeBps)}）`,
       `预计到手：${order.sellerReceives}`,
       `有效期：${order.expiryMinutes} 分钟`,
       `钱包：${state.wallet}`

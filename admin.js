@@ -11,6 +11,14 @@ function formatNumber(value, max = 6) {
   if (!Number.isFinite(n)) return '0';
   return new Intl.NumberFormat('zh-CN', { maximumFractionDigits: max }).format(n);
 }
+function formatFeePercent(feeBps) {
+  const percent = Number(feeBps) / 100;
+  return `${Number.isInteger(percent) ? percent : percent.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}%`;
+}
+function renderFeePreview() {
+  const percent = Number($('feeInput').value || 0);
+  $('feePreview').textContent = `${Number.isInteger(percent) ? percent : percent.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')}%`;
+}
 function showToast(message, type = 'ok') {
   const toast = $('toast');
   toast.textContent = message;
@@ -56,6 +64,10 @@ function renderOrders(orders) {
 }
 function renderDashboard(data) {
   const orders = data.orders || [];
+  const feePercent = formatFeePercent(data.config.feeBps);
+  $('statFee').textContent = feePercent;
+  $('feeInput').value = Number(data.config.feeBps) / 100;
+  $('feePreview').textContent = feePercent;
   $('statPending').textContent = orders.filter(order => order.status === 'open').length;
   $('statOrders').textContent = orders.length;
   renderOrders(orders);
@@ -91,6 +103,22 @@ async function cancelOrder(orderId) {
     showToast(err.message, 'error');
   }
 }
+async function saveFee(event) {
+  event.preventDefault();
+  const feePercent = Number($('feeInput').value);
+  if (!Number.isFinite(feePercent) || feePercent < 0 || feePercent > 10) {
+    return showToast('服务费率需在 0%–10% 之间。', 'error');
+  }
+  if (!confirm(`确认将平台服务费调整为 ${feePercent}%？\n\n只影响之后创建的新订单，已发布订单保持原费率。`)) return;
+  try {
+    await api('/api/admin/fee', { method: 'POST', body: JSON.stringify({ feePercent }) });
+    showToast('平台服务费率已保存。');
+    await loadAdminState();
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
 async function logout() {
   try { await api('/api/admin/logout', { method: 'POST', body: '{}' }); } catch (_) {}
   setLoginVisible(false);
@@ -98,6 +126,8 @@ async function logout() {
 }
 function bind() {
   $('loginForm').addEventListener('submit', login);
+  $('feeForm').addEventListener('submit', saveFee);
+  $('feeInput').addEventListener('input', renderFeePreview);
   $('refreshAdmin').addEventListener('click', loadAdminState);
   $('logoutButton').addEventListener('click', logout);
   $('adminOrderList').addEventListener('click', event => {
